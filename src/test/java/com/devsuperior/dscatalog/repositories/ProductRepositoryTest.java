@@ -71,4 +71,24 @@ class ProductRepositoryTest {
         });
     }
 
+    /*
+        Correção Nélio
+        Testes Repository
+    */
+
+    @Test
+    public void findByIdShouldReturnOptionalProductWhenIdExists() {
+
+        Optional<Product> result = repository.findById(existingId);
+
+        Assertions.assertTrue(result.isPresent());
+    }
+
+    @Test
+    public void findByIdShouldReturnOptionalProductWhenIdDoesNotExists() {
+
+        Optional<Product> result = repository.findById(existingId);
+
+        Assertions.assertTrue(result.isEmpty());
+    }
 }
