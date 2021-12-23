@@ -28,6 +28,22 @@ class ProductRepositoryTest {
     }
 
     @Test
+    public void findShouldSuccessWhenIdExists() {;
+        Optional<Product> result = repository.findById(existingId);
+
+        Assertions.assertNotNull(result.get());
+        Assertions.assertEquals( 1, result.get().getId());
+    }
+
+    @Test
+    public void findShoulFailuredWhenIdNotExists() {
+        Optional<Product> result = repository.findById(nonExistingId);
+
+        Assertions.assertFalse(result.isPresent());
+    }
+
+
+    @Test
     public void saveShouldPersistWithAutoIncrementWhenIdIsNull() {
         Product product = Factory.createProduct();
         product.setId(null);
@@ -36,8 +52,6 @@ class ProductRepositoryTest {
 
         Assertions.assertNotNull(product.getId());
         Assertions.assertEquals(countTotalProducts + 1, product.getId());
-
-
     }
 
     @Test
