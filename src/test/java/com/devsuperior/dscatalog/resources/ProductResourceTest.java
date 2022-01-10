@@ -21,10 +21,8 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductResource.class)
 class ProductResourceTest {
@@ -65,6 +63,54 @@ class ProductResourceTest {
         doNothing().when(service).delete(existingId);
         doThrow(ResourceNotFoundException.class).when(service).delete(nonExistingId);
         doThrow(DatabaseException.class).when(service).delete(dependentId);
+
+        when(service.insert(any())).thenReturn(productDTO);
+    }
+
+    @Test
+    public void insertShouldReturnProductDTOWhenProductDtoExists() throws Exception {
+        String jsonBody = objectMapper.writeValueAsString(productDTO);
+
+        ResultActions resultActions =
+                mockMvc.perform(post("/products")
+                        .content(jsonBody)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                        .andExpect(content().json(jsonBody));
+
+        verify(service).insert(any(ProductDTO.class));
+
+        resultActions.andExpect(status().isCreated());
+        resultActions.andExpect(jsonPath("$.id").exists());
+        resultActions.andExpect(jsonPath("$.name").exists());
+        resultActions.andExpect(jsonPath("$.description").exists());
+        resultActions.andExpect(jsonPath("$.price").exists());
+        resultActions.andExpect(jsonPath("$.imgUrl").exists());
+        resultActions.andExpect(jsonPath("$.date").exists());
+    }
+
+    @Test
+    public void deleteShouldReturnProductDTOWhenProductDtoExist() throws Exception {
+
+        ResultActions resultActions =
+                mockMvc.perform(delete("/products/{id}", existingId)
+                                .accept(MediaType.APPLICATION_JSON));
+
+        verify(service, times(1)).delete(existingId);
+
+        resultActions.andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void deleteShouldReturnProductDTOWhenIdDoesNotExist() throws Exception {
+
+        ResultActions resultActions =
+                mockMvc.perform(delete("/products/{id}", nonExistingId)
+                        .accept(MediaType.APPLICATION_JSON));
+
+        verify(service, times(1)).delete(nonExistingId);
+
+        resultActions.andExpect(status().isNotFound());
     }
 
     @Test
